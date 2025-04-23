@@ -1,0 +1,883 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kephra</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3949ab;
+            --secondary-color: #5c6bc0;
+            --success-color: #43a047;
+            --warning-color: #ffa000;
+            --danger-color: #e53935;
+            --light-bg: #f5f7fa;
+            --dark-text: #37474f;
+            --card-shadow: 0 4px 6px rgba(0,0,0,0.08);
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background-color: var(--primary-color);
+            box-shadow: var(--card-shadow);
+        }
+        
+        .sidebar {
+            background-color: #fff;
+            box-shadow: var(--card-shadow);
+            border-radius: 12px;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-4px);
+        }
+        
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        
+        .eip-card .card-header {
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .github-card .card-header {
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .agent-card .card-header {
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        .logs-container {
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-active {
+            background-color: var(--success-color);
+        }
+        
+        .status-inactive {
+            background-color: var(--danger-color);
+        }
+        
+        .status-pending {
+            background-color: var(--warning-color);
+        }
+        
+        .tab-content {
+            padding: 20px;
+            background: #fff;
+            border-radius: 0 0 12px 12px;
+        }
+        
+        .nav-tabs {
+            border: none;
+            padding: 0 20px;
+            background: #fff;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            color: var(--dark-text);
+            padding: 15px 20px;
+            font-weight: 500;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background: transparent;
+            border-bottom: 3px solid var(--primary-color);
+        }
+        
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .agent-item {
+            background: #fff;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: var(--card-shadow);
+            border-left: 4px solid var(--secondary-color);
+            transition: transform 0.2s;
+        }
+        
+        .agent-item:hover {
+            transform: translateY(-4px);
+        }
+        
+        .eip-view {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .eip-content {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin-top: 15px;
+        }
+        
+        .issue-badge {
+            display: inline-block;
+            border-radius: 16px;
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .priority-high {
+            background-color: rgba(229, 57, 53, 0.1);
+            color: #e53935;
+        }
+        
+        .priority-medium {
+            background-color: rgba(255, 160, 0, 0.1);
+            color: #ffa000;
+        }
+        
+        .priority-low {
+            background-color: rgba(67, 160, 71, 0.1);
+            color: #43a047;
+        }
+        
+        .eip-detail {
+            padding: 10px 15px;
+            background: rgba(57, 73, 171, 0.05);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .eip-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .eip-meta-item {
+            background: rgba(92, 107, 192, 0.1);
+            color: var(--primary-color);
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <span class="fs-4">Kephra <span class="text-light fw-light">EIP Generator</span></span>
+            </a>
+            <div class="d-flex align-items-center">
+                <span class="navbar-text me-3 text-light">
+                    <span class="status-indicator" id="system-status"></span>
+                    <span id="status-text">Initializing...</span>
+                </span>
+                <button class="btn btn-outline-light me-2" id="start-btn">
+                    <i class="fas fa-play me-1"></i> Start
+                </button>
+                <button class="btn btn-outline-light" id="stop-btn">
+                    <i class="fas fa-stop me-1"></i> Stop
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab">
+                                    <i class="fas fa-chart-line me-2"></i>Dashboard
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="eips-tab" data-bs-toggle="tab" data-bs-target="#eips" type="button" role="tab">
+                                    <i class="fas fa-file-code me-2"></i>Generated EIPs
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="issues-tab" data-bs-toggle="tab" data-bs-target="#issues" type="button" role="tab">
+                                    <i class="fas fa-exclamation-circle me-2"></i>GitHub Issues
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="logs-tab" data-bs-toggle="tab" data-bs-target="#logs-tab-content" type="button" role="tab">
+                                    <i class="fas fa-terminal me-2"></i>System Logs
+                                </button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="mainTabsContent">
+                            <!-- Dashboard Tab -->
+                            <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+                                <h4 class="mb-4">Agent Activities</h4>
+                                <div id="agents-container" class="agents-grid">
+                                    <!-- Agents will be populated here -->
+                                    <div class="text-center text-muted py-5">
+                                        <i class="fas fa-robot fa-3x mb-3 text-secondary opacity-50"></i>
+                                        <p>No active agents</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <div class="card github-card">
+                                            <div class="card-header d-flex justify-content-between align-items-center">
+                                                <h5 class="mb-0">
+                                                    <i class="fab fa-github me-2"></i>Latest Issues
+                                                </h5>
+                                                <span class="badge bg-primary" id="issues-count">0</span>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="github-issues-preview" style="max-height: 300px; overflow-y: auto;">
+                                                    <!-- Latest issues preview -->
+                                                    <div class="text-center text-muted py-4">
+                                                        <i class="fas fa-search fa-2x mb-3 text-secondary opacity-50"></i>
+                                                        <p>No issues found yet</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="card eip-card">
+                                            <div class="card-header d-flex justify-content-between align-items-center">
+                                                <h5 class="mb-0">
+                                                    <i class="fas fa-file-code me-2"></i>Latest Proposals
+                                                </h5>
+                                                <span class="badge bg-primary" id="proposals-count">0</span>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="proposals-preview" style="max-height: 300px; overflow-y: auto;">
+                                                    <!-- Latest proposals preview -->
+                                                    <div class="text-center text-muted py-4">
+                                                        <i class="fas fa-file-alt fa-2x mb-3 text-secondary opacity-50"></i>
+                                                        <p>No proposals yet</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- EIPs Tab -->
+                            <div class="tab-pane fade" id="eips" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h4>Generated EIP Proposals</h4>
+                                    <span class="badge bg-primary fs-6" id="eips-count">0</span>
+                                </div>
+                                
+                                <div id="eip-details">
+                                    <!-- EIP details will go here -->
+                                    <div class="text-center text-muted py-5">
+                                        <i class="fas fa-file-alt fa-3x mb-3 text-secondary opacity-50"></i>
+                                        <p>Select an EIP to view details</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div id="proposals-full">
+                                            <!-- Full proposals list -->
+                                            <div class="text-center text-muted py-5">
+                                                <i class="fas fa-file-alt fa-3x mb-3 text-secondary opacity-50"></i>
+                                                <p>No proposals generated yet</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Issues Tab -->
+                            <div class="tab-pane fade" id="issues" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h4>GitHub Issues</h4>
+                                    <span class="badge bg-primary fs-6" id="full-issues-count">0</span>
+                                </div>
+                                
+                                <div id="github-issues-full">
+                                    <!-- Full issues list -->
+                                    <div class="text-center text-muted py-5">
+                                        <i class="fas fa-exclamation-circle fa-3x mb-3 text-secondary opacity-50"></i>
+                                        <p>No issues found yet</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Logs Tab (Hidden by default) -->
+                            <div class="tab-pane fade" id="logs-tab-content" role="tabpanel">
+                                <h4 class="mb-3">System Logs</h4>
+                                <div class="logs-container" id="logs">
+                                    <!-- Logs will be populated here -->
+                                    <div class="text-center text-muted py-3">
+                                        <p>No logs available</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // WebSocket connection
+        const socket = new WebSocket(`ws://${window.location.host}/ws`);
+        const logsContainer = document.getElementById('logs');
+        const githubIssuesPreview = document.getElementById('github-issues-preview');
+        const githubIssuesFull = document.getElementById('github-issues-full');
+        const proposalsPreview = document.getElementById('proposals-preview');
+        const proposalsFull = document.getElementById('proposals-full');
+        const agentsContainer = document.getElementById('agents-container');
+        const eipDetails = document.getElementById('eip-details');
+        const statusIndicator = document.getElementById('system-status');
+        const statusText = document.getElementById('status-text');
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const issuesCount = document.getElementById('issues-count');
+        const fullIssuesCount = document.getElementById('full-issues-count');
+        const proposalsCount = document.getElementById('proposals-count');
+        const eipsCount = document.getElementById('eips-count');
+        
+        // Store full data
+        let allProposals = {};
+        let selectedEip = null;
+        
+        // Update system status UI
+        function updateStatus(status) {
+            if (status === 'active') {
+                statusIndicator.className = 'status-indicator status-active';
+                statusText.textContent = 'Running';
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+            } else if (status === 'inactive') {
+                statusIndicator.className = 'status-indicator status-inactive';
+                statusText.textContent = 'Stopped';
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+            } else {
+                statusIndicator.className = 'status-indicator status-pending';
+                statusText.textContent = 'Starting...';
+                startBtn.disabled = true;
+                stopBtn.disabled = true;
+            }
+        }
+        
+        // Add a log entry
+        function addLogEntry(log) {
+            // Remove placeholder if exists
+            if (logsContainer.querySelector('.text-muted')) {
+                logsContainer.innerHTML = '';
+            }
+            
+            const entry = document.createElement('p');
+            entry.className = 'log-entry m-0 py-1';
+            entry.textContent = log;
+            logsContainer.appendChild(entry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+            
+            // Limit the number of log entries
+            while (logsContainer.children.length > 1000) {
+                logsContainer.removeChild(logsContainer.firstChild);
+            }
+        }
+        
+        // Update GitHub issues display (preview)
+        function updateGithubIssuesPreview(issues) {
+            if (!issues || issues.length === 0) {
+                githubIssuesPreview.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-search fa-2x mb-3 text-secondary opacity-50"></i>
+                        <p>No issues found yet</p>
+                    </div>`;
+                githubIssuesFull.innerHTML = `
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-exclamation-circle fa-3x mb-3 text-secondary opacity-50"></i>
+                        <p>No issues found yet</p>
+                    </div>`;
+                issuesCount.textContent = '0';
+                fullIssuesCount.textContent = '0';
+                return;
+            }
+            
+            // Count issues that need EIPs
+            const needsEipCount = issues.filter(issue => issue.needs_eip).length;
+            issuesCount.textContent = needsEipCount.toString();
+            fullIssuesCount.textContent = issues.length.toString();
+            
+            // Preview - only show issues that need EIPs, limited to 5
+            const previewIssues = issues.filter(issue => issue.needs_eip).slice(0, 5);
+            
+            if (previewIssues.length === 0) {
+                githubIssuesPreview.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <p>No issues need EIPs currently</p>
+                    </div>`;
+            } else {
+                githubIssuesPreview.innerHTML = '';
+                previewIssues.forEach(issue => {
+                    const card = document.createElement('div');
+                    card.className = 'card mb-2 border-0 shadow-sm';
+                    card.innerHTML = `
+                        <div class="card-body p-3">
+                            <h6 class="card-title mb-1">#${issue.number}: ${issue.title}</h6>
+                            <p class="card-text small text-muted mb-1">${issue.body?.substring(0, 100) || ''}${issue.body?.length > 100 ? '...' : ''}</p>
+                            <div class="mt-2">
+                                <span class="badge bg-primary">Needs EIP</span>
+                                ${(issue.labels || []).map(label => `
+                                    <span class="badge bg-secondary">${label}</span>
+                                `).join(' ')}
+                            </div>
+                        </div>
+                    `;
+                    githubIssuesPreview.appendChild(card);
+                });
+            }
+            
+            // Full issues list
+            githubIssuesFull.innerHTML = '';
+            issues.forEach(issue => {
+                const needsEipBadge = issue.needs_eip ? '<span class="badge bg-primary me-2">Needs EIP</span>' : '';
+                
+                const card = document.createElement('div');
+                card.className = 'card mb-3';
+                card.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title mb-0">#${issue.number}: ${issue.title}</h5>
+                            <div>${needsEipBadge}</div>
+                        </div>
+                        <p class="card-text">${issue.body || 'No description provided'}</p>
+                        <div class="mt-3">
+                            ${(issue.labels || []).map(label => `
+                                <span class="badge bg-secondary me-1">${label}</span>
+                            `).join('')}
+                            <a href="https://github.com/${issue.repo ? `ethereum/${issue.repo}/issues/${issue.number}` : '#'}" 
+                               class="btn btn-sm btn-outline-primary float-end" target="_blank">
+                                <i class="fab fa-github me-1"></i> View on GitHub
+                            </a>
+                        </div>
+                    </div>
+                `;
+                githubIssuesFull.appendChild(card);
+            });
+        }
+        
+        // Show EIP details
+        function showEipDetails(eipId) {
+            const proposal = allProposals[eipId];
+            if (!proposal) return;
+            
+            selectedEip = eipId;
+            
+            // Update all proposal cards to remove active state
+            document.querySelectorAll('.eip-proposal-card').forEach(card => {
+                card.classList.remove('border-primary');
+            });
+            
+            // Add active state to selected card
+            const selectedCard = document.getElementById(`eip-card-${eipId}`);
+            if (selectedCard) {
+                selectedCard.classList.add('border-primary');
+            }
+            
+            // Get EIP data
+            const eipData = proposal.eip_data || {};
+            
+            // Check if we have full_content
+            let contentHTML = '';
+            
+            // Special handling for auto-generated EIPs from logs
+            if (proposal.is_generated) {
+                if (eipData.full_content) {
+                    contentHTML = `
+                        <div class="alert alert-info">
+                            <i class="fas fa-robot me-2"></i>
+                            This EIP was automatically generated from GitHub issue #${proposal.issue_number}.
+                            Check the <a href="#" onclick="document.getElementById('logs-tab').click();" class="alert-link">system logs</a> for details.
+                        </div>
+                        <div class="eip-detail">
+                            <h5>Original Issue</h5>
+                            <p><a href="https://github.com/ethereum/EIPs/issues/${proposal.issue_number}" target="_blank">#${proposal.issue_number}: ${proposal.issue_title}</a></p>
+                        </div>
+                        <div class="eip-content border rounded p-3 bg-light">
+                            <pre class="mb-0">${eipData.full_content}</pre>
+                        </div>
+                    `;
+                } else {
+                    contentHTML = `
+                        <div class="alert alert-info">
+                            <i class="fas fa-robot me-2"></i>
+                            This EIP was automatically generated from GitHub issue #${proposal.issue_number}.
+                            Check the <a href="#" onclick="document.getElementById('logs-tab').click();" class="alert-link">system logs</a> for details.
+                        </div>
+                        <div class="eip-detail">
+                            <h5>Original Issue</h5>
+                            <p><a href="https://github.com/ethereum/EIPs/issues/${proposal.issue_number}" target="_blank">#${proposal.issue_number}: ${proposal.issue_title}</a></p>
+                        </div>
+                    `;
+                }
+            } 
+            // Full content display for file-based EIPs
+            else if (eipData.full_content) {
+                contentHTML = `
+                    <div class="eip-content border rounded p-3 bg-light">
+                        <pre class="mb-0">${eipData.full_content}</pre>
+                    </div>
+                `;
+            } 
+            // Build sections from individual parts if full_content is not available
+            else if (eipData.motivation || eipData.specification || eipData.rationale || eipData.implementation) {
+                // Build sections from parts if we don't have full content
+                if (eipData.motivation) {
+                    contentHTML += `
+                        <div class="eip-detail">
+                            <h5>Motivation</h5>
+                            <p>${eipData.motivation}</p>
+                        </div>
+                    `;
+                }
+                
+                if (eipData.specification) {
+                    contentHTML += `
+                        <div class="eip-detail">
+                            <h5>Specification</h5>
+                            <p>${eipData.specification}</p>
+                        </div>
+                    `;
+                }
+                
+                if (eipData.rationale) {
+                    contentHTML += `
+                        <div class="eip-detail">
+                            <h5>Rationale</h5>
+                            <p>${eipData.rationale}</p>
+                        </div>
+                    `;
+                }
+                
+                if (eipData.implementation) {
+                    contentHTML += `
+                        <div class="eip-detail">
+                            <h5>Implementation</h5>
+                            <p>${eipData.implementation}</p>
+                        </div>
+                    `;
+                }
+            } else {
+                contentHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Full EIP content not available.
+                    </div>
+                `;
+            }
+            
+            eipDetails.innerHTML = `
+                <div class="eip-view">
+                    <h4 class="mb-3">${eipId}: ${eipData.title || 'Untitled'}</h4>
+                    
+                    <div class="eip-meta">
+                        <div class="eip-meta-item">
+                            <i class="fas fa-tag me-1"></i> ${eipData.status || 'Draft'}
+                        </div>
+                        <div class="eip-meta-item">
+                            <i class="fas fa-code-branch me-1"></i> ${eipData.type || 'Standards Track'}
+                        </div>
+                        <div class="eip-meta-item">
+                            <i class="fas fa-user me-1"></i> ${eipData.author || 'Unknown'}
+                        </div>
+                        <div class="eip-meta-item">
+                            <i class="far fa-calendar-alt me-1"></i> Created: ${new Date(proposal.created_at).toLocaleDateString()}
+                        </div>
+                    </div>
+                    
+                    <div class="eip-detail">
+                        <h5>Abstract</h5>
+                        <p>${eipData.abstract || 'No abstract provided'}</p>
+                    </div>
+                    
+                    ${contentHTML}
+                    
+                    ${proposal.file_path ? `
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <h5 class="mb-0">File Location</h5>
+                            <span class="badge bg-light text-dark">${proposal.file_path}</span>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+        
+        // Update proposals display
+        function updateProposals(activeProposals) {
+            // Store the full data
+            allProposals = activeProposals || {};
+            
+            const proposalCount = Object.keys(allProposals).length;
+            proposalsCount.textContent = proposalCount.toString();
+            eipsCount.textContent = proposalCount.toString();
+            
+            if (proposalCount === 0) {
+                proposalsPreview.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-file-alt fa-2x mb-3 text-secondary opacity-50"></i>
+                        <p>No proposals yet</p>
+                    </div>`;
+                    
+                proposalsFull.innerHTML = `
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-file-alt fa-3x mb-3 text-secondary opacity-50"></i>
+                        <p>No proposals generated yet</p>
+                    </div>`;
+                
+                // Clear EIP details if none selected
+                if (!selectedEip || !allProposals[selectedEip]) {
+                    eipDetails.innerHTML = `
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-file-alt fa-3x mb-3 text-secondary opacity-50"></i>
+                            <p>Select an EIP to view details</p>
+                        </div>`;
+                }
+                
+                return;
+            }
+            
+            // Preview - show latest 5 proposals
+            const previewProposalIds = Object.keys(allProposals).slice(0, 5);
+            proposalsPreview.innerHTML = '';
+            
+            previewProposalIds.forEach(eipId => {
+                const proposal = allProposals[eipId];
+                const statusClass = 
+                    proposal.status === 'draft' ? 'warning' :
+                    proposal.status === 'submitted' ? 'info' :
+                    proposal.status === 'reviewed' ? 'primary' : 'success';
+                
+                const card = document.createElement('div');
+                card.className = 'card mb-2 border-0 shadow-sm';
+                card.innerHTML = `
+                    <div class="card-body p-3">
+                        <h6 class="mb-1">${eipId}</h6>
+                        <p class="small mb-1">${proposal.eip_data?.title || 'Untitled'}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-${statusClass}">${proposal.status}</span>
+                            <small class="text-muted">${new Date(proposal.created_at).toLocaleDateString()}</small>
+                        </div>
+                    </div>
+                `;
+                proposalsPreview.appendChild(card);
+            });
+            
+            // Full proposals list
+            proposalsFull.innerHTML = '<div class="row row-cols-1 row-cols-md-2 g-4 mb-4">';
+            
+            Object.keys(allProposals).forEach(eipId => {
+                const proposal = allProposals[eipId];
+                const statusClass = 
+                    proposal.status === 'draft' ? 'warning' :
+                    proposal.status === 'submitted' ? 'info' :
+                    proposal.status === 'reviewed' ? 'primary' : 'success';
+                
+                const isActive = selectedEip === eipId;
+                
+                proposalsFull.innerHTML += `
+                    <div class="col">
+                        <div id="eip-card-${eipId}" class="card h-100 eip-proposal-card ${isActive ? 'border-primary' : ''}">
+                            <div class="card-body">
+                                <h5 class="card-title">${eipId}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">${proposal.eip_data?.title || 'Untitled'}</h6>
+                                <p class="card-text small">${proposal.eip_data?.abstract?.substring(0, 120) || 'No abstract'}${proposal.eip_data?.abstract?.length > 120 ? '...' : ''}</p>
+                            </div>
+                            <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
+                                <span class="badge bg-${statusClass}">${proposal.status}</span>
+                                <button onclick="showEipDetails('${eipId}')" class="btn btn-sm btn-primary">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            proposalsFull.innerHTML += '</div>';
+            
+            // Show details of first EIP if none selected yet
+            if (!selectedEip || !allProposals[selectedEip]) {
+                const firstEipId = Object.keys(allProposals)[0];
+                if (firstEipId) {
+                    showEipDetails(firstEipId);
+                }
+            } else if (allProposals[selectedEip]) {
+                // Update details of currently selected EIP
+                showEipDetails(selectedEip);
+            }
+            
+            // Add onclick handlers for EIP cards
+            setTimeout(() => {
+                document.querySelectorAll('.eip-proposal-card').forEach(card => {
+                    const eipId = card.id.replace('eip-card-', '');
+                    card.onclick = () => showEipDetails(eipId);
+                });
+            }, 100);
+        }
+        
+        // Update agents display
+        function updateAgents(agents) {
+            if (!agents || Object.keys(agents).length === 0) {
+                agentsContainer.innerHTML = `
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-robot fa-3x mb-3 text-secondary opacity-50"></i>
+                        <p>No active agents</p>
+                    </div>`;
+                return;
+            }
+            
+            agentsContainer.innerHTML = '';
+            
+            for (const [agentId, agent] of Object.entries(agents)) {
+                const agentTypeIcon = 
+                    agent.agent_type === 'PROPOSER' ? 'fa-lightbulb' :
+                    agent.agent_type === 'REVIEWER' ? 'fa-clipboard-check' :
+                    agent.agent_type === 'SIMULATOR' ? 'fa-vial' :
+                    agent.agent_type === 'CONSENSUS' ? 'fa-balance-scale' : 'fa-robot';
+                
+                const div = document.createElement('div');
+                div.className = 'agent-item';
+                div.innerHTML = `
+                    <h6 class="mb-2">
+                        <i class="fas ${agentTypeIcon} me-2"></i>
+                        ${agent.name}
+                    </h6>
+                    <p class="text-muted small mb-2">${agent.role}</p>
+                    <div class="mt-2">
+                        <span class="badge bg-primary">${agent.agent_type}</span>
+                    </div>
+                `;
+                agentsContainer.appendChild(div);
+            }
+        }
+        
+        // Handle WebSocket messages
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            
+            if (data.type === 'log') {
+                addLogEntry(data.content);
+            } else if (data.type === 'github_issues') {
+                updateGithubIssuesPreview(data.issues);
+            } else if (data.type === 'proposals') {
+                updateProposals(data.proposals);
+            } else if (data.type === 'agents') {
+                updateAgents(data.agents);
+            } else if (data.type === 'status') {
+                updateStatus(data.status);
+            }
+        };
+        
+        // Connect WebSocket
+        socket.onopen = function(e) {
+            console.log("WebSocket connection established");
+            addLogEntry("[DASHBOARD] WebSocket connection established");
+            
+            // Request initial data
+            socket.send(JSON.stringify({ action: 'get_status' }));
+        };
+        
+        // Handle connection errors
+        socket.onerror = function(error) {
+            console.error("WebSocket error:", error);
+            addLogEntry("[DASHBOARD] WebSocket error");
+            updateStatus('inactive');
+        };
+        
+        // Handle connection close
+        socket.onclose = function(event) {
+            if (event.wasClean) {
+                console.log(`WebSocket connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+                addLogEntry(`[DASHBOARD] WebSocket connection closed: ${event.reason}`);
+            } else {
+                console.error('WebSocket connection died');
+                addLogEntry("[DASHBOARD] WebSocket connection died");
+            }
+            updateStatus('inactive');
+        };
+        
+        // Handle button clicks
+        startBtn.addEventListener('click', function() {
+            socket.send(JSON.stringify({ action: 'start' }));
+            updateStatus('pending');
+        });
+        
+        stopBtn.addEventListener('click', function() {
+            socket.send(JSON.stringify({ action: 'stop' }));
+            updateStatus('pending');
+        });
+        
+        // Make showEipDetails global
+        window.showEipDetails = showEipDetails;
+        
+        // Initial UI setup
+        updateStatus('inactive');
+    </script>
+</body>
+</html>
+        

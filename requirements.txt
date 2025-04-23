@@ -1,0 +1,61 @@
+# Core dependencies
+openai>=1.16.0
+anthropic>=0.20.0
+fastapi>=0.110.0
+uvicorn>=0.27.0
+pydantic>=2.6.0
+python-dotenv>=1.0.0
+
+# Agent framework dependencies
+# Note: AgentHub would typically be installed from the framework directory
+crewai>=0.28.0
+langchain>=0.1.0
+langchain-openai>=0.0.5
+
+# Ethereum-specific dependencies
+eth-utils>=2.3.0
+web3>=6.15.0
+py-evm>=0.7.0
+pytest-ethereum>=0.2.0
+eth-tester>=0.10.0
+
+# MCP (Model Context Protocol) implementation
+mcp>=0.1.0
+# If the MCP package doesn't exist or is not available on PyPI:
+# git+https://github.com/anthropics/anthropic-mcp.git
+
+# Development and testing
+pytest>=7.4.0
+black>=23.12.0
+isort>=5.13.0
+mypy>=1.8.0
+pylint>=3.0.3
+
+# Utility libraries
+numpy>=1.26.0
+pandas>=2.2.0
+requests>=2.31.0
+aiohttp>=3.9.0
+asyncio>=3.4.3
+tenacity>=8.2.3
+
+# Visualization and UI (if needed)
+matplotlib>=3.8.2
+streamlit==1.30.0
+
+# Database
+sqlalchemy>=2.0.0
+alembic>=1.13.0
+
+# For CometBFT integration (when needed for ChaosChain)
+# tendermint-py>=0.8.0
+
+# New dependencies
+pydantic-settings==2.1.0
+httpx==0.25.2
+python-markdown==3.4.4
+typing-extensions==4.8.0
+
+# CLI framework
+# Use Typer for building production-ready commands
+typer>=0.10.0 
