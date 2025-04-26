@@ -546,7 +546,6 @@ class ReviewerAgent(KephraAgent):
                 confidence = 0.5
                 reasoning = "The proposal shows potential but needs substantial revisions before approval. " + \
                             f"It scored {overall_score:.2f} overall, with both strengths and significant weaknesses."
-        
         else:
             decision = DecisionType.REJECT
             confidence = 0.7 + (0.4 - overall_score) * 0.75  # Scale from 0.7 to 1.0
